@@ -37,7 +37,7 @@
         'API REST completa para gestión de inventario con autenticación JWT, caché de consultas ' +
         'frecuentes con Redis y despliegue automatizado con Docker Compose. ' +
         'Incluye CRUD completo, paginación, búsqueda avanzada y reportes exportables en PDF.',
-      tags: ['Java 11', 'Spring Boot', 'MongoDB', 'Redis', 'Docker', 'JWT', 'JUnit'],
+      tags: ['Java 17', 'Spring Boot', 'MySQL', 'Redis', 'Docker', 'JWT', 'JUnit'],
       github: '#',
     },
   ];
