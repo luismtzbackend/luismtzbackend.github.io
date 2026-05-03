@@ -175,5 +175,63 @@
       });
     });
 
+    /* ---- Animated counter for stat-cards ---- */
+    function animateCounter(el, target, suffix) {
+      var duration = 1600;
+      var startTime = null;
+      el.classList.add('counting');
+      function step(ts) {
+        if (!startTime) startTime = ts;
+        var progress = Math.min((ts - startTime) / duration, 1);
+        var ease = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(ease * target) + suffix;
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          el.textContent = target + suffix;
+          el.classList.remove('counting');
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    if ('IntersectionObserver' in window) {
+      var statObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var numEl = entry.target.querySelector('.stat-card__number');
+            if (numEl) {
+              var match = numEl.textContent.trim().match(/^(\d+)(.*)$/);
+              if (match) animateCounter(numEl, parseInt(match[1]), match[2]);
+            }
+            statObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('.stat-card').forEach(function (c) { statObserver.observe(c); });
+    }
+
+    /* ---- Inject scan-line div into each project card ---- */
+    function addScanLine(card) {
+      if (!card.querySelector('.scan-line')) {
+        var sl = document.createElement('div');
+        sl.className = 'scan-line';
+        sl.setAttribute('aria-hidden', 'true');
+        card.appendChild(sl);
+      }
+    }
+    document.querySelectorAll('.project-card').forEach(addScanLine);
+    var projectsGrid2 = document.getElementById('projectsGrid');
+    if (projectsGrid2) {
+      var scanObs = new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+          m.addedNodes.forEach(function (node) {
+            if (node.nodeType === 1 && node.classList.contains('project-card')) addScanLine(node);
+          });
+        });
+      });
+      scanObs.observe(projectsGrid2, { childList: true });
+    }
+
   }); /* end DOMContentLoaded */
 })();
