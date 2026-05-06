@@ -416,8 +416,9 @@ main,
 /* Avatar */
 .hero__image {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   justify-content: center;
-  align-items: center;
   opacity: 0;
   animation: fadeIn .8s ease .4s forwards;
 }
@@ -426,8 +427,13 @@ main,
   position: relative;
   width: 270px;
   height: 270px;
+  align-self: center;
 }
 
+.robot-mascot {
+  margin-top: 7rem;          /* Más abajo (aumentado de 2rem a 7rem) */
+  margin-right: 1.5rem;
+}
 .avatar-ring {
   position: absolute;
   inset: -8px;
