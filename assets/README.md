@@ -4,7 +4,7 @@ Coloca aquí los siguientes archivos antes de desplegar:
 
 | Archivo                  | Descripción                                                   |
 |--------------------------|---------------------------------------------------------------|
-| `cv-luis-martinez.pdf`   | Tu currículum en PDF (el botón "Descargar CV" lo referencia) |
+| `Luis_Gustavo_Martinez_Herrera_CV.pdf` | Tu currículum en PDF (el botón "Descargar CV" lo referencia) |
 | `og-image.png`           | Imagen para Open Graph / redes sociales (1200×630 px)        |
 | `favicon.ico`            | Favicon del sitio (opcional pero recomendado)                |
 
