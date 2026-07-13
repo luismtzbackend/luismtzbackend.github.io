@@ -32,9 +32,9 @@
       var rect  = robot.getBoundingClientRect();
       var scale = svgEl.clientWidth / 100;           /* viewBox width = 100 */
 
-      /* Robotboy left-eye centre: SVG cx=37, cy=42 */
-      var lx = rect.left + 37 * scale;
-      var ly = rect.top  + 42 * scale;
+      /* Left-eye centre: SVG cx=40, cy=31 */
+      var lx = rect.left + 40 * scale;
+      var ly = rect.top  + 31 * scale;
 
       var dx = cx - lx;
       var dy = cy - ly;

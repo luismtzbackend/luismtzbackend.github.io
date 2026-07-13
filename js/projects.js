@@ -1,7 +1,7 @@
 /**
  * projects.js
- * Stores project data and renders cards dynamically.
- * Supports filtering by technology tag.
+ * Stores project data and renders cards dynamically as
+ * faux code-editor windows. Supports filtering by technology tag.
  */
 (function () {
   'use strict';
@@ -9,42 +9,61 @@
   var PROJECTS = [
     {
       id: 1,
-      icon: '🏢',
-      title: 'ERP Microservices Suite',
+      icon: '🏦',
+      file: 'PQRService.java',
+      class: 'PQRService',
+      title: 'Sistema PQR — Entidad Financiera',
       description:
-        'Evolución de sistema monolítico a arquitectura de microservicios para gestión empresarial. ' +
-        'Incluye servicios independientes de inventario, facturación y cartera con comunicación ' +
-        'asíncrona mediante Apache Kafka y caching distribuido con Redis.',
-      tags: ['Java 17', 'Spring Boot', 'Docker', 'MySQL', 'Redis', 'Kafka', 'JUnit'],
+        'Microservicios para la gestión de Peticiones, Quejas y Reclamos (PQR) de una entidad ' +
+        'financiera. Seguridad con JWT y Spring Security, persistencia en PostgreSQL con caché ' +
+        'de consultas en Redis, y despliegue en AWS mediante contenedores Docker.',
+      tags: ['Java', 'Spring Boot', 'Spring Security', 'JWT', 'PostgreSQL', 'Redis', 'Docker', 'AWS'],
       github: '#',
     },
     {
       id: 2,
-      icon: '🔀',
-      title: 'REST API Gateway',
+      icon: '🏠',
+      file: 'PropertyRentalService.java',
+      class: 'PropertyRentalService',
+      title: 'Administración y Alquiler de Propiedades',
       description:
-        'API Gateway implementado con Spring Cloud Gateway para enrutar y balancear solicitudes ' +
-        'hacia microservicios internos. Incluye autenticación JWT centralizada, rate limiting, ' +
-        'circuit breaker y registro dinámico de servicios con Eureka Discovery.',
-      tags: ['Spring Boot', 'Spring Cloud', 'JWT', 'Eureka', 'Redis', 'Docker'],
+        'Suite de microservicios para la administración y alquiler de propiedades: gestión de ' +
+        'inmuebles, reservas y disponibilidad en tiempo real. Despliegue en la nube orquestado ' +
+        'con Kubernetes y Docker sobre AWS.',
+      tags: ['Java', 'Spring Boot', 'Docker', 'Kubernetes', 'AWS', 'MySQL'],
       github: '#',
     },
     {
       id: 3,
-      icon: '📦',
-      title: 'Inventory Management System',
+      icon: '📅',
+      file: 'BookingApiService.java',
+      class: 'BookingApiService',
+      title: 'Plataforma de Reservas',
       description:
-        'API REST completa para gestión de inventario con autenticación JWT, caché de consultas ' +
-        'frecuentes con Redis y despliegue automatizado con Docker Compose. ' +
-        'Incluye CRUD completo, paginación, búsqueda avanzada y reportes exportables en PDF.',
-      tags: ['Java 17', 'Spring Boot', 'MySQL', 'Redis', 'Docker', 'JWT', 'JUnit'],
+        'Diseño e implementación de APIs REST para una plataforma de reservas, con integración ' +
+        'de bases de datos y colaboración estrecha con el equipo frontend en React para exponer ' +
+        'los datos consumidos por la interfaz.',
+      tags: ['Java', 'Spring Boot', 'REST', 'MySQL', 'React'],
+      github: '#',
+    },
+    {
+      id: 4,
+      icon: '📱',
+      file: 'ImeiRegistrySupport.java',
+      class: 'ImeiRegistrySupport',
+      title: 'Base de Datos Nacional de IMEIs',
+      description:
+        'Mantenimiento y soporte de aplicaciones Java sobre servidores Linux para la base de ' +
+        'datos nacional de IMEIs de Colombia. Consultas SQL avanzadas, resolución de incidencias ' +
+        'y optimización de procesos en producción.',
+      tags: ['Java', 'SQL', 'Linux'],
       github: '#',
     },
   ];
 
   /* ---- GitHub icon SVG (shared) ---- */
   var GH_ICON =
-    '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">' +
+    '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">' +
     '<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387' +
     '.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416' +
     '-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729' +
@@ -58,7 +77,17 @@
     'c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386' +
     ' 0-6.627-5.373-12-12-12z"/></svg>';
 
-  /** Build a project card element */
+  /** One "line" of the faux source file: a line-number + highlighted content */
+  function codeLine(num, innerHTML, extraClass) {
+    return (
+      '<div class="project-card__line' + (extraClass ? ' ' + extraClass : '') + '">' +
+        '<span class="project-card__lineno">' + num + '</span>' +
+        '<span class="project-card__code-text">' + innerHTML + '</span>' +
+      '</div>'
+    );
+  }
+
+  /** Build a project card element styled as a code-editor window */
   function createCard(project, delayIndex) {
     var card = document.createElement('article');
     card.className = 'project-card';
@@ -66,22 +95,38 @@
     card.dataset.tags = project.tags.join(',').toLowerCase();
 
     var tagsHTML = project.tags
-      .map(function (t) { return '<span class="project-tag">' + escHtml(t) + '</span>'; })
-      .join('');
+      .map(function (t) { return '<span class="tok-string">"' + escHtml(t) + '"</span>'; })
+      .join('<span class="tok-punct">, </span>');
+
+    var linkHTML = (project.github && project.github !== '#')
+      ? '<a href="' + project.github + '" target="_blank" rel="noopener noreferrer"' +
+          ' class="project-card__link" aria-label="Ver ' + escHtml(project.title) + ' en GitHub">' +
+          GH_ICON +
+        '</a>'
+      : '<span class="project-card__private">privado</span>';
+
+    var lines =
+      codeLine(1,
+        '<span class="tok-comment">// ' + project.icon + ' ' + escHtml(project.title) + '</span>') +
+      codeLine(2,
+        '<span class="tok-kw">public class</span> <span class="tok-class">' + escHtml(project.class) +
+        '</span> <span class="tok-kw">implements</span> <span class="tok-class">Project</span> <span class="tok-punct">{</span>') +
+      codeLine(3,
+        '<span class="tok-comment">/** ' + escHtml(project.description) + ' */</span>',
+        'project-card__line--desc') +
+      codeLine(4,
+        '&nbsp;&nbsp;<span class="tok-annotation">@Stack</span><span class="tok-punct">(</span>' + tagsHTML + '<span class="tok-punct">)</span>') +
+      codeLine(5, '<span class="tok-punct">}</span>');
 
     card.innerHTML =
-      '<div class="project-card__header">' +
-        '<span class="project-card__icon" aria-hidden="true">' + project.icon + '</span>' +
-        '<div class="project-card__links">' +
-          '<a href="' + project.github + '" target="_blank" rel="noopener noreferrer"' +
-            ' class="project-card__link" aria-label="Ver ' + escHtml(project.title) + ' en GitHub">' +
-            GH_ICON +
-          '</a>' +
-        '</div>' +
+      '<div class="project-card__titlebar">' +
+        '<span class="terminal-dot terminal-dot--r"></span>' +
+        '<span class="terminal-dot terminal-dot--y"></span>' +
+        '<span class="terminal-dot terminal-dot--g"></span>' +
+        '<span class="project-card__filename">' + escHtml(project.file) + '</span>' +
+        '<div class="project-card__links">' + linkHTML + '</div>' +
       '</div>' +
-      '<h3 class="project-card__title">' + escHtml(project.title) + '</h3>' +
-      '<p class="project-card__desc">' + escHtml(project.description) + '</p>' +
-      '<div class="project-card__tags">' + tagsHTML + '</div>';
+      '<div class="project-card__code">' + lines + '</div>';
 
     return card;
   }

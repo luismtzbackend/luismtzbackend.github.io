@@ -39,8 +39,13 @@
 <body>
 
   <!-- ==================== NAVBAR ==================== -->
+  <!-- Canvas de lluvia de código — capa más profunda -->
+  <canvas id="codeRainCanvas" class="code-rain-canvas" aria-hidden="true"></canvas>
   <!-- Canvas global de red neuronal — cubre toda la página -->
   <canvas id="neuralCanvas" class="neural-canvas" aria-hidden="true"></canvas>
+  <!-- Cursor personalizado -->
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
 
   <header class="navbar" id="navbar">
     <div class="container navbar__inner">
@@ -82,6 +87,18 @@
             Construyo APIs robustas, escalables y seguras. Especializado en arquitecturas
             de microservicios con Java y Spring Boot.
           </p>
+
+          <div class="terminal-window fade-in" aria-hidden="true">
+            <div class="terminal-window__bar">
+              <span class="terminal-dot terminal-dot--r"></span>
+              <span class="terminal-dot terminal-dot--y"></span>
+              <span class="terminal-dot terminal-dot--g"></span>
+              <span class="terminal-window__title">bash — luis@backend</span>
+            </div>
+            <div class="terminal-window__body">
+              <pre class="terminal-window__output" id="terminalOutput"></pre>
+            </div>
+          </div>
 
           <div class="hero__actions">
             <a href="#projects" class="btn btn--primary">Ver Proyectos</a>
@@ -127,85 +144,104 @@
             <svg class="robot-svg" viewBox="0 0 100 158" xmlns="http://www.w3.org/2000/svg">
 
               <!-- Shadow -->
-              <ellipse id="robot-shadow" cx="50" cy="155" rx="22" ry="3.5" fill="rgba(59,130,246,0.18)"/>
+              <ellipse id="robot-shadow" cx="50" cy="155.5" rx="27" ry="3.6" fill="rgba(56,189,248,0.2)"/>
 
-              <!-- Left antenna -->
-              <line x1="36" y1="16" x2="25" y2="4" stroke="#1c5a8e" stroke-width="3.5" stroke-linecap="round"/>
-              <circle class="robot-antenna" cx="25" cy="4" r="5" fill="#38bdf8"/>
-              <circle cx="25" cy="4" r="2.2" fill="white" opacity="0.6"/>
+              <!-- Head crest fin -->
+              <polygon points="50,3 46,13 54,13" fill="#38bdf8"/>
 
-              <!-- Right antenna -->
-              <line x1="64" y1="16" x2="75" y2="4" stroke="#1c5a8e" stroke-width="3.5" stroke-linecap="round"/>
-              <circle class="robot-antenna" cx="75" cy="4" r="5" fill="#38bdf8"/>
-              <circle cx="75" cy="4" r="2.2" fill="white" opacity="0.6"/>
+              <!-- Left helmet fin (ear) -->
+              <polygon points="27,25 13,18 20,34 27,34" fill="#1c2b40" stroke="#38bdf8" stroke-width="1"/>
+              <polygon class="robot-antenna robot-antenna--a" points="13,18 17,20.6 17,24" fill="#38bdf8"/>
 
-              <!-- Head -->
-              <circle cx="50" cy="45" r="34" fill="#3a8dc9" stroke="#1c5a8e" stroke-width="1.5"/>
-              <!-- Head sheen -->
-              <ellipse cx="43" cy="23" rx="14" ry="8" fill="rgba(255,255,255,0.18)" transform="rotate(-20,43,23)"/>
+              <!-- Right helmet fin (ear) -->
+              <polygon points="73,25 87,18 80,34 73,34" fill="#1c2b40" stroke="#38bdf8" stroke-width="1"/>
+              <polygon class="robot-antenna robot-antenna--b" points="87,18 83,20.6 83,24" fill="#38bdf8"/>
 
-              <!-- Ear pads -->
-              <circle cx="16" cy="45" r="9"  fill="#1c5a8e"/>
-              <circle cx="16" cy="45" r="6"  fill="#3a8dc9" stroke="#1c5a8e" stroke-width="0.8"/>
-              <circle cx="84" cy="45" r="9"  fill="#1c5a8e"/>
-              <circle cx="84" cy="45" r="6"  fill="#3a8dc9" stroke="#1c5a8e" stroke-width="0.8"/>
+              <!-- Head / helmet -->
+              <polygon points="38,12 62,12 74,22 74,44 64,54 36,54 26,44 26,22"
+                       fill="#1c2b40" stroke="#38bdf8" stroke-width="1.4"/>
+              <!-- Helmet sheen -->
+              <polygon points="38,12 62,12 69,19 31,19" fill="rgba(255,255,255,0.10)"/>
 
-              <!-- Face panel (lighter) -->
-              <ellipse cx="50" cy="47" rx="26" ry="24" fill="#4fa3d9"/>
+              <!-- Visor slit (static) -->
+              <path d="M32 26 L68 26 L71 31 L68 36 L32 36 L29 31 Z" fill="#040910" stroke="#38bdf8" stroke-width="1.1"/>
 
-              <!-- Eye sockets -->
-              <circle cx="37" cy="42" r="12" fill="#e8f6fd" stroke="#1c5a8e" stroke-width="0.8"/>
-              <circle cx="63" cy="42" r="12" fill="#e8f6fd" stroke="#1c5a8e" stroke-width="0.8"/>
-
-              <!-- Left pupil group (tracked by JS) -->
+              <!-- Left eye (tracked by JS) -->
               <g id="pupil-group-left">
-                <circle cx="37" cy="42" r="8"   fill="#1c4a7e"/>
-                <circle cx="37" cy="42" r="4.8"  fill="#3b82f6"/>
-                <circle cx="40"  cy="38.5" r="2.8" fill="white" opacity="0.88"/>
+                <polygon points="40,27.6 43.2,29.5 43.2,33.5 40,35.4 36.8,33.5 36.8,29.5" fill="#38bdf8"/>
+                <circle cx="41" cy="30.6" r="0.9" fill="white" opacity="0.9"/>
               </g>
 
-              <!-- Right pupil group (tracked by JS) -->
+              <!-- Right eye (tracked by JS) -->
               <g id="pupil-group-right">
-                <circle cx="63" cy="42" r="8"   fill="#1c4a7e"/>
-                <circle cx="63" cy="42" r="4.8"  fill="#3b82f6"/>
-                <circle cx="66"  cy="38.5" r="2.8" fill="white" opacity="0.88"/>
+                <polygon points="60,27.6 63.2,29.5 63.2,33.5 60,35.4 56.8,33.5 56.8,29.5" fill="#38bdf8"/>
+                <circle cx="61" cy="30.6" r="0.9" fill="white" opacity="0.9"/>
               </g>
 
-              <!-- Smile -->
-              <path d="M 43 58 Q 50 65 57 58" fill="none" stroke="#1c5a8e" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Battle-mask mouthplate -->
+              <polygon points="31,38 69,38 66.5,50 50,54 33.5,50" fill="#3b4a5e" stroke="#38bdf8" stroke-width="1"/>
+              <line x1="50" y1="38" x2="50" y2="53" stroke="#0a1522" stroke-width="0.8"/>
+              <g>
+                <rect class="r-led" x="35" y="43.5" width="4" height="2.2" rx="0.6" fill="#38bdf8"/>
+                <rect class="r-led" x="40.5" y="43.5" width="4" height="2.2" rx="0.6" fill="#38bdf8"/>
+                <rect class="r-led" x="46" y="43.5"  width="4" height="2.2" rx="0.6" fill="#38bdf8"/>
+                <rect class="r-led" x="53" y="43.5"  width="4" height="2.2" rx="0.6" fill="#38bdf8"/>
+                <rect class="r-led" x="58.5" y="43.5" width="4" height="2.2" rx="0.6" fill="#38bdf8"/>
+              </g>
 
               <!-- Neck -->
-              <rect x="40" y="77" width="20" height="7" rx="3.5" fill="#1c5a8e"/>
+              <polygon points="43,54 57,54 59,62 41,62" fill="#0a1522"/>
 
-              <!-- Body -->
-              <rect x="18" y="82" width="64" height="50" rx="13" fill="#3a8dc9" stroke="#1c5a8e" stroke-width="1.5"/>
-              <rect x="21" y="84" width="58" height="8"  rx="11" fill="rgba(255,255,255,0.1)"/>
+              <!-- Torso: broad chest tapering to a narrow waist -->
+              <polygon points="22,64 78,64 80,78 68,102 32,102 20,78"
+                       fill="#1c2b40" stroke="#38bdf8" stroke-width="1.4"/>
+              <polygon points="22,64 78,64 80,78 20,78" fill="rgba(255,255,255,0.07)"/>
 
-              <!-- Chest power core -->
-              <circle cx="50" cy="108" r="9"   fill="#1c5a8e" stroke="#38bdf8" stroke-width="1"/>
-              <circle cx="50" cy="108" r="5.5" fill="#38bdf8" class="r-power"/>
-              <circle cx="50" cy="108" r="2.5" fill="white"  opacity="0.7"/>
+              <!-- Collar status screen -->
+              <rect x="39" y="68" width="22" height="7.5" rx="1.2" fill="#03060c" stroke="rgba(56,189,248,0.55)" stroke-width="0.55"/>
+              <rect class="r-code-1" x="41" y="69.9" width="11" height="1"  fill="#38bdf8"/>
+              <rect class="r-code-2" x="41" y="71.6" width="17" height="1"  fill="#38bdf8"/>
+              <rect class="r-code-3" x="41" y="73.3" width="8"  height="1"  fill="#38bdf8"/>
 
-              <!-- Left arm (shoulder at right edge ~x=20) -->
+              <!-- Chest hex reactor -->
+              <circle class="r-ring" cx="50" cy="88" r="9" fill="none" stroke="#38bdf8" stroke-width="0.6" stroke-dasharray="2.4 3" opacity="0.55"/>
+              <polygon points="50,81 55.5,84.5 55.5,90.5 50,94 44.5,90.5 44.5,84.5" fill="#0a1522" stroke="#38bdf8" stroke-width="1"/>
+              <circle cx="50" cy="87.5" r="3.8" fill="#38bdf8" class="r-power"/>
+              <circle cx="50" cy="87.5" r="1.6" fill="white"  opacity="0.85"/>
+
+              <!-- Waist belt -->
+              <rect x="34" y="102" width="32" height="6" rx="1" fill="#0a1522" stroke="#0ea5e9" stroke-width="0.8"/>
+              <rect x="46" y="103" width="8" height="4" rx="0.8" fill="#38bdf8" opacity="0.85"/>
+
+              <!-- Hips -->
+              <polygon points="30,108 70,108 76,120 24,120" fill="#1c2b40" stroke="#38bdf8" stroke-width="1.2"/>
+
+              <!-- Left arm: pauldron + forearm + fist (shoulder-hinged, tracked by CSS) -->
               <g id="robot-arm-left">
-                <rect x="-3"  y="86" width="23" height="15" rx="7.5" fill="#3a8dc9" stroke="#1c5a8e" stroke-width="1.5"/>
-                <circle cx="4"  cy="108" r="8"   fill="#1c5a8e"/>
-                <circle cx="4"  cy="108" r="5.5" fill="#3a8dc9"/>
+                <polygon points="24,62 6,60 -4,68 -4,82 4,90 20,90 24,82" fill="#1c2b40" stroke="#38bdf8" stroke-width="1.2"/>
+                <rect x="-2" y="82" width="20" height="22" rx="3" fill="#26374d" stroke="#38bdf8" stroke-width="1"/>
+                <rect x="-4" y="102" width="22" height="13" rx="4" fill="#0a1522" stroke="#0ea5e9" stroke-width="1"/>
               </g>
 
-              <!-- Right arm (shoulder at left edge ~x=80) -->
+              <!-- Right arm: pauldron + forearm + fist (mirrored) -->
               <g id="robot-arm-right">
-                <rect x="80" y="86" width="23" height="15" rx="7.5" fill="#3a8dc9" stroke="#1c5a8e" stroke-width="1.5"/>
-                <circle cx="96" cy="108" r="8"   fill="#1c5a8e"/>
-                <circle cx="96" cy="108" r="5.5" fill="#3a8dc9"/>
+                <polygon points="76,62 94,60 104,68 104,82 96,90 80,90 76,82" fill="#1c2b40" stroke="#38bdf8" stroke-width="1.2"/>
+                <rect x="82" y="82" width="20" height="22" rx="3" fill="#26374d" stroke="#38bdf8" stroke-width="1"/>
+                <rect x="82" y="102" width="22" height="13" rx="4" fill="#0a1522" stroke="#0ea5e9" stroke-width="1"/>
               </g>
 
               <!-- Legs -->
-              <rect x="27" y="131" width="18" height="20" rx="8" fill="#1c5a8e"/>
-              <rect x="55" y="131" width="18" height="20" rx="8" fill="#1c5a8e"/>
-              <!-- Feet -->
-              <ellipse cx="36" cy="151" rx="15" ry="5" fill="#1c5a8e"/>
-              <ellipse cx="64" cy="151" rx="15" ry="5" fill="#1c5a8e"/>
+              <polygon points="27,120 48,120 46,150 30,150" fill="#1c2b40" stroke="#38bdf8" stroke-width="1.2"/>
+              <polygon points="52,120 73,120 70,150 54,150" fill="#1c2b40" stroke="#38bdf8" stroke-width="1.2"/>
+              <!-- Knee joint accents -->
+              <line x1="28.5" y1="136" x2="46.5" y2="136" stroke="#0ea5e9" stroke-width="0.8" opacity="0.7"/>
+              <line x1="53.5" y1="136" x2="71.5" y2="136" stroke="#0ea5e9" stroke-width="0.8" opacity="0.7"/>
+
+              <!-- Boots -->
+              <polygon points="23,150 51,150 53,157.5 19,157.5" fill="#0a1522" stroke="#38bdf8" stroke-width="1"/>
+              <polygon points="49,150 77,150 81,157.5 47,157.5" fill="#0a1522" stroke="#38bdf8" stroke-width="1"/>
+              <ellipse cx="36" cy="156.5" rx="9" ry="1.6" fill="#38bdf8" opacity="0.55"/>
+              <ellipse cx="64" cy="156.5" rx="9" ry="1.6" fill="#38bdf8" opacity="0.55"/>
 
             </svg>
           </div>
@@ -232,19 +268,16 @@
         <div class="about__grid">
           <div class="about__text fade-in">
             <p>
-              Tecnólogo en Análisis y Desarrollo de Software con formación en desarrollo backend usando
-              <strong>Java (8/11/17)</strong> y <strong>Spring Boot</strong>.
-              Experiencia en el diseño y construcción de <strong>APIs REST</strong>, aplicaciones web
-              y manejo de bases de datos relacionales (MySQL, PostgreSQL) y NoSQL (MongoDB, Redis).
+              Desarrollador Backend Java con <strong>3 años de experiencia</strong> en el diseño y
+              desarrollo de <strong>APIs REST</strong> y arquitecturas basadas en
+              <strong>microservicios</strong>, utilizando Java (8/11/17/21) y <strong>Spring Boot</strong>.
             </p>
             <p>
-              Conocimientos en arquitectura de <strong>microservicios</strong>, contenedores
-              (Docker, Kubernetes) y servicios en la nube (<strong>AWS</strong>), así como en
-              metodologías ágiles (Scrum) y trabajo colaborativo en equipos multidisciplinarios.
+              Experiencia con MySQL, PostgreSQL, MongoDB, Redis, Docker y <strong>AWS</strong>,
+              aplicando buenas prácticas de desarrollo, pruebas unitarias y metodologías ágiles (Scrum).
             </p>
             <p>
-              Aplico buenas prácticas de desarrollo, control de versiones (Git/GitHub) y
-              pruebas unitarias (JUnit, Mockito).
+              Enfocado en construir soluciones escalables, seguras y de alto rendimiento.
             </p>
 
             <ul class="about__details">
@@ -252,35 +285,33 @@
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 <span>Bello, Antioquia, Colombia</span>
               </li>
-             
-              </li>
               <li class="detail-item">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 <a href="mailto:luisgmartinez.engineer@gmail.com">luisgmartinez.engineer@gmail.com</a>
               </li>
               <li class="detail-item">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <span>Español nativo &nbsp;·&nbsp; Inglés intermedio</span>
+                <span>Español (nativo)</span>
               </li>
             </ul>
           </div>
 
           <div class="about__stats fade-in">
             <div class="stat-card">
-              <span class="stat-card__number">1+</span>
-              <span class="stat-card__label">Año de experiencia</span>
+              <span class="stat-card__number">3+</span>
+              <span class="stat-card__label">Años de experiencia</span>
             </div>
             <div class="stat-card">
-              <span class="stat-card__number">3+</span>
-              <span class="stat-card__label">Proyectos completados</span>
+              <span class="stat-card__number">4+</span>
+              <span class="stat-card__label">Proyectos destacados</span>
             </div>
             <div class="stat-card">
               <span class="stat-card__number">10+</span>
               <span class="stat-card__label">Tecnologías</span>
             </div>
             <div class="stat-card">
-              <span class="stat-card__number">2</span>
-              <span class="stat-card__label">Formaciones activas</span>
+              <span class="stat-card__number">1</span>
+              <span class="stat-card__label">Formación en curso</span>
             </div>
           </div>
         </div>
@@ -305,12 +336,12 @@
               Lenguajes y Frameworks
             </h3>
             <div class="tag-list">
-              <span class="tag tag--primary">Java 8/11/17</span>
+              <span class="tag tag--primary">Java 8/11/17/21</span>
               <span class="tag tag--primary">Spring Boot</span>
               <span class="tag tag--primary">Spring MVC</span>
+              <span class="tag">Spring Security</span>
               <span class="tag">Hibernate</span>
               <span class="tag">JPA</span>
-              <span class="tag ">Python</span>
             </div>
           </div>
 
@@ -322,10 +353,8 @@
             <div class="tag-list">
               <span class="tag tag--primary">MySQL</span>
               <span class="tag tag--primary">PostgreSQL</span>
-              <span class="tag">Oracle SQL</span>
-              <span class="tag">SQL Server</span>
               <span class="tag tag--primary">MongoDB</span>
-              <span class="tag">Redis</span>
+              <span class="tag">Redis (caché)</span>
             </div>
           </div>
 
@@ -337,10 +366,8 @@
             <div class="tag-list">
               <span class="tag tag--primary">AWS</span>
               <span class="tag tag--primary">Docker</span>
-              <span class="tag">Kubernetes</span>
-              <span class="tag">Apache Kafka</span>
+              <span class="tag tag--primary">Kubernetes</span>
               <span class="tag">Linux</span>
-              <span class="tag">Windows</span>
             </div>
           </div>
 
@@ -352,10 +379,9 @@
             <div class="tag-list">
               <span class="tag tag--primary">APIs REST</span>
               <span class="tag tag--primary">Git / GitHub</span>
-              <span class="tag">Spring Security</span>
-              <span class="tag">Postman</span>
               <span class="tag">Maven</span>
-              <span class="tag">Gradle</span>
+              <span class="tag">Postman</span>
+              <span class="tag">Scrum</span>
             </div>
           </div>
 
@@ -367,8 +393,6 @@
             <div class="tag-list">
               <span class="tag tag--primary">JUnit</span>
               <span class="tag tag--primary">Mockito</span>
-              <span class="tag">TDD</span>
-              <span class="tag">Integración continua</span>
             </div>
           </div>
 
@@ -378,7 +402,6 @@
               Habilidades Blandas
             </h3>
             <div class="tag-list">
-              <span class="tag">Scrum</span>
               <span class="tag">Trabajo en equipo</span>
               <span class="tag">Comunicación efectiva</span>
               <span class="tag">Pensamiento analítico</span>
@@ -406,8 +429,8 @@
           <button class="filter-btn" data-filter="Java">Java</button>
           <button class="filter-btn" data-filter="Spring Boot">Spring Boot</button>
           <button class="filter-btn" data-filter="Docker">Docker</button>
-          <button class="filter-btn" data-filter="MongoDB">MongoDB</button>
-          <button class="filter-btn" data-filter="Redis">Redis</button>
+          <button class="filter-btn" data-filter="AWS">AWS</button>
+          <button class="filter-btn" data-filter="Kubernetes">Kubernetes</button>
         </div>
 
         <div class="projects-grid" id="projectsGrid" aria-live="polite">
@@ -446,28 +469,40 @@
                 <div class="timeline-dot" aria-hidden="true"></div>
                 <article class="timeline-card">
                   <div class="timeline-card__header">
-                    <h4>Desarrollador de Software</h4>
+                    <h4>Desarrollador Backend Java</h4>
                   <span class="badge badge--current">Concluido</span>
                   </div>
-                  <p class="timeline-card__company">Granero El Caimán</p>
+                  <p class="timeline-card__company">ASTRION S.A.S. — Planeta Rica, Córdoba</p>
                   <p class="timeline-card__date">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Abril 2025 – Abril 2026
+                    Junio 2023 – Junio 2026
                   </p>
                   <ul class="timeline-card__tasks">
-                    <li>Construcción de sistema ERP (inventario, ventas, cartera, facturación y reportes contables) con Java y Spring Boot</li>
-                    <li>Modelación de entidades con JPA/Hibernate y diseño de APIs REST</li>
-                    <li>Implementación de seguridad con Spring Security</li>
-                    <li>Evolución de arquitectura monolítica a microservicios con Docker</li>
-                    <li>Testing con JUnit y Mockito</li>
+                    <li>Diseño y construcción de APIs REST con Java y Spring Boot: capa de servicios, lógica de negocio y persistencia con JPA/Hibernate</li>
+                    <li>Seguridad con Spring Security mediante autenticación y autorización con JWT</li>
+                    <li>Desarrollo de interfaces en React para consumir las APIs REST del equipo backend</li>
+                    <li>Bases de datos MySQL y PostgreSQL, con Redis como caché para consultas de alto tráfico</li>
+                    <li>Empaquetado de servicios en Docker y despliegue en AWS en entornos de prueba y producción</li>
+                    <li>Trabajo en equipos ágiles bajo metodología Scrum</li>
                   </ul>
                   <div class="mini-tag-list">
                     <span class="mini-tag">Java</span>
                     <span class="mini-tag">Spring Boot</span>
-                    <span class="mini-tag">Docker</span>
-                    <span class="mini-tag">JPA</span>
-                    <span class="mini-tag">JUnit</span>
                     <span class="mini-tag">Spring Security</span>
+                    <span class="mini-tag">JWT</span>
+                    <span class="mini-tag">React</span>
+                    <span class="mini-tag">Docker</span>
+                    <span class="mini-tag">AWS</span>
+                    <span class="mini-tag">Redis</span>
+                  </div>
+                  <div class="timeline-card__projects">
+                    <p class="timeline-card__projects-title">Proyectos destacados:</p>
+                    <ul class="timeline-card__tasks">
+                      <li><strong>Sistema PQR para entidad financiera:</strong> microservicios con Spring Boot, seguridad JWT/Spring Security, PostgreSQL y Redis; despliegue en AWS con Docker</li>
+                      <li><strong>Administración y alquiler de propiedades:</strong> microservicios para gestionar propiedades, reservas y disponibilidad; despliegue con Docker, Kubernetes y AWS</li>
+                      <li><strong>Plataforma de reservas:</strong> diseño de APIs REST e integración de bases de datos, en colaboración con el equipo frontend</li>
+                      <li><strong>Base de datos nacional de IMEIs (Colombia):</strong> mantenimiento y soporte de aplicaciones Java, consultas SQL y servidores Linux</li>
+                    </ul>
                   </div>
                 </article>
               </div>
@@ -486,7 +521,7 @@
                 <div class="timeline-dot" aria-hidden="true"></div>
                 <article class="timeline-card">
                   <div class="timeline-card__header">
-                    <h4>Ingeniería de Sistemas</h4>
+                    <h4>Ingeniería de Inteligencia Artificial y Análisis de Datos</h4>
                     <span class="badge badge--current">En curso</span>
                   </div>
                   <p class="timeline-card__company">UNAD</p>
@@ -508,7 +543,7 @@
                   <p class="timeline-card__company">SENA</p>
                   <p class="timeline-card__date">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Mayo 2023 – Abril 2026
+                    Mayo 2023 – Junio 2026
                   </p>
                   <p class="timeline-card__desc">Servicio Nacional de Aprendizaje</p>
                 </article>
@@ -601,9 +636,12 @@
   </a>
 
   <script src="js/dark-mode.js"></script>
+  <script src="js/code-rain.js"></script>
   <script src="js/neural-network.js"></script>
   <script src="js/projects.js"></script>
   <script src="js/main.js"></script>
   <script src="js/robot.js"></script>
+  <script src="js/terminal.js"></script>
+  <script src="js/interactions.js"></script>
 </body>
 </html>
